@@ -1,29 +1,31 @@
 import React, { useState } from 'react'
-import socket from '../socket';
 import axios from 'axios'
 
+export type ObjType = {
+  roomId: string
+  userName: string
+}
+
 type JoinBlockType = {
-  onLogin: () => void
+  onLogin: (obj: ObjType) => void
 }
 
 const JoinBlock: React.FC<JoinBlockType> = ({onLogin}) => {
   const [roomId, setRoomId] = useState('')
-  const [nameChat, setNameChat] = useState('')
+  const [userName, setUserName] = useState('')
   const [isLoading, setLoading] = useState(false)
 
   const onEnter = async () => {
-    if (!roomId || !nameChat) {
+    if (!roomId || !userName) {
       return alert('Заполните оба поля')
     }
-    setLoading(true)
-    await axios.post('/rooms', {
+    const obj = {
       roomId,
-      nameChat
-    }).then( () => {
-      onLogin()
-    })
-    // console.log('roomId', roomId)
-    // console.log('nameChat', nameChat)
+      userName
+    }
+    setLoading(true)
+    await axios.post('/rooms', obj)
+    onLogin(obj)
   }
 
   return (
@@ -39,8 +41,8 @@ const JoinBlock: React.FC<JoinBlockType> = ({onLogin}) => {
           type="text"
           placeholder='Ваше имя'
           className="input"
-          value={nameChat}
-          onChange={(e) => setNameChat(e.target.value)}
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
         />
         <button
           className='btn btn-success'
