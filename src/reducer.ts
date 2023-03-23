@@ -3,7 +3,7 @@ import { ObjType } from "./components/JoinBlock"
 export enum EnumType {
     JOINED = 'JOINED',
     SET_USERS = 'SET_USERS',
-    SET_MESSAGES = 'SET_MESSAGES'
+    NEW_MESSAGE = 'NEW_MESSAGE'
 }
 interface IsAuthAction {
     type: EnumType.JOINED
@@ -13,17 +13,22 @@ interface UsersAction {
     type: EnumType.SET_USERS
     payload: string[]
 }
+
+type message = {
+    userName: string
+    text: string
+  }
 interface MessagesAction {
-    type: EnumType.SET_MESSAGES
-    payload: string[]
+    type: EnumType.NEW_MESSAGE
+    payload: message
 }
 
 export interface StateType {
     joined: boolean
     roomId: string | null
-    userName: string | null
-    users: string[]
-    messages: string[]
+    userName: string  
+    users: string[] | []
+    messages: message[] | []
 }
 
 const reducer = (state: StateType, action: IsAuthAction | UsersAction | MessagesAction) => {
@@ -42,11 +47,11 @@ const reducer = (state: StateType, action: IsAuthAction | UsersAction | Messages
                 users: action.payload
             }
 
-        case EnumType.SET_MESSAGES:
+        case EnumType.NEW_MESSAGE:
             return {
                 ...state,
-                messages: action.payload
-            }
+                messages: [...state.messages, action.payload]
+             }
 
         default:
             return state;

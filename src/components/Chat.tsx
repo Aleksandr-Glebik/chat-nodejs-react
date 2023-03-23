@@ -1,18 +1,41 @@
-import React from 'react';
-// import socket from '../socket';
+import React, {useRef, useEffect} from 'react';
+import socket from '../socket';
+
+type message = {
+  userName: string
+  text: string
+}
 
 type ChatPropsType = {
     users: string[]
-    messages: string[]
+    userName: string
+    roomId: string | null
+    messages: message[] | []
+    onAddMessage: (message: message) => void
 }
 
-const Chat: React.FC<ChatPropsType> = ({ users, messages }) => {
+const Chat: React.FC<ChatPropsType> = ({ users, messages, userName, roomId, onAddMessage }) => {
   const [messageValue, setMessageValue] = React.useState('');
+  const messagesRef = useRef<HTMLDivElement>(null)
+
+  const onSendMessage = () => {
+    socket.emit('ROOM:NEW_MESSAGE', {
+      userName,
+      roomId,
+      text: messageValue
+    })
+    onAddMessage( {userName: userName, text: messageValue} )
+    setMessageValue('')
+  }
+
+  useEffect( () => {
+    messagesRef.current?.scrollTo(0, 999990)
+  }, [messages])
 
   return (
     <div className="chat">
       <div className="chat-users">
-        Комната: <b>Название комнаты</b>
+        Комната: <b>{roomId}</b>
         <hr />
         <b>Онлайн ({users.length}):</b>
         <ul>
@@ -22,11 +45,18 @@ const Chat: React.FC<ChatPropsType> = ({ users, messages }) => {
         </ul>
       </div>
       <div className="chat-messages">
-        <div  className="messages">
-            <p>Lorem, ipsum.</p>
+        <div className='messages' ref={messagesRef}>
+        {messages.map( (message, index) => (
+          <div
+            key={`${message}_${index}`}
+            className="message"
+          >
+            <p>{message.text}</p>
             <div>
-                <span>Test user</span>
+                <span>{message.userName}</span>
             </div>
+          </div>
+        ))}
         </div>
         <form>
           <textarea
@@ -34,7 +64,11 @@ const Chat: React.FC<ChatPropsType> = ({ users, messages }) => {
             onChange={(e) => setMessageValue(e.target.value)}
             className="form-control"
             ></textarea>
-          <button  type="button" className="btn btn-primary">
+          <button
+            onClick={onSendMessage}
+            type="button"
+            className="btn btn-primary"
+          >
             Отправить
           </button>
         </form>

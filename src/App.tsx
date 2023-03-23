@@ -7,11 +7,16 @@ import { EnumType } from './reducer';
 import socket from './socket';
 import axios from 'axios';
 
+type message = {
+  userName: string
+  text: string
+}
+
 const App: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, {
     joined: false,
     roomId: null,
-    userName: null,
+    userName: '',
     users: [],
     messages: []
   })
@@ -33,9 +38,17 @@ const App: React.FC = () => {
     })
   }
 
+  const addMessage = (message: message) => {
+    dispatch({
+      type: EnumType.NEW_MESSAGE,
+      payload: message,
+    })
+  }
+
   useEffect( () => {
-    // socket.on('ROOM:JOINED', setUsers)
     socket.on('ROOM:SET_USERS', setUsers)
+
+    socket.on('ROOM:NEW_MESSAGE', (message: message) => addMessage(message))
   }, [])
 
   console.log('state', state)
@@ -44,7 +57,7 @@ const App: React.FC = () => {
     <div className="wrapper">
       {!state.joined
         ? <JoinBlock onLogin={onLogin} />
-        : <Chat {...state} />
+        : <Chat {...state} onAddMessage={addMessage}/>
       }
     </div>
   );
