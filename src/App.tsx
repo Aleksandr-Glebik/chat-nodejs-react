@@ -28,7 +28,11 @@ const App: React.FC = () => {
     })
     socket.emit('ROOM:JOIN', obj)
     const {data} = await axios.get(`/rooms/${obj.roomId}`)
-    setUsers(data.users)
+    // setUsers(data.users)
+    dispatch({
+      type: EnumType.SET_DATA,
+      payload: data
+    })
   }
 
   const setUsers = (users: string[]) => {
